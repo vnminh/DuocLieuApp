@@ -1,0 +1,6 @@
+[submodule "duoc-lieu-be"]
+	path = duoc-lieu-be
+	url = https://github.com/vnminh/DuocLieuBE.git
+[submodule "duoc-lieu-fe/duoc-lieu-fe"]
+	path = duoc-lieu-fe/duoc-lieu-fe
+	url = https://github.com/vnminh/DuocLieuFE.git
