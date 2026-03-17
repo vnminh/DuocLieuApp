@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: duoc-lieu-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: duoclieu
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d duoclieu']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  be:
+    build:
+      context: ./duoc-lieu-be
+      dockerfile: Dockerfile
+    container_name: duoc-lieu-be
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/duoclieu?schema=public
+      ADMIN_EMAIL: admin@duoclieu.local
+      ADMIN_PASSWORD: Admin@12345
+      ADMIN_FULL_NAME: Administrator
+    ports:
+      - '3001:3001'
+    volumes:
+      - ./duoc-lieu-be/upload:/app/upload
+
+  fe:
+    build:
+      context: ./duoc-lieu-fe/duoc-lieu-fe
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: http://localhost:3001
+    container_name: duoc-lieu-fe
+    restart: unless-stopped
+    depends_on:
+      - be
+    ports:
+      - '8080:8080'
+    environment:
+      NEXT_PUBLIC_BASE_URL: http://localhost:3001
+
+volumes:
+  postgres_data:
