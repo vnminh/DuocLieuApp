@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    networks:
+      - duoc-lieu-network
 
   be:
     build:
@@ -26,31 +28,29 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      PORT: 3001
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/duoclieu?schema=public
-      ADMIN_EMAIL: admin@duoclieu.local
-      ADMIN_PASSWORD: Admin@12345
-      ADMIN_FULL_NAME: Administrator
     ports:
       - '3001:3001'
     volumes:
       - ./duoc-lieu-be/upload:/app/upload
+    networks:
+      - duoc-lieu-network
 
   fe:
     build:
       context: ./duoc-lieu-fe/duoc-lieu-fe
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_BASE_URL: http://localhost:3001
     container_name: duoc-lieu-fe
     restart: unless-stopped
     depends_on:
       - be
     ports:
       - '8080:8080'
-    environment:
-      NEXT_PUBLIC_BASE_URL: http://localhost:3001
+    networks:
+      - duoc-lieu-network
 
 volumes:
   postgres_data:
+
+networks:
+  duoc-lieu-network:
+    driver: bridge
